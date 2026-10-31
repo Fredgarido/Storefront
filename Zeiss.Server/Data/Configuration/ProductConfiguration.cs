@@ -16,6 +16,9 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.HasKey(p => p.Id);
 
+        builder.Property(p => p.Id)
+            .UseSequence(AppDbContext.ProductIdSequence);
+
         builder.Property(p => p.Name)
             .IsRequired()
             .HasMaxLength(100);
