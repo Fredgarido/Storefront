@@ -1,7 +1,0 @@
-<Solution>
-  <Project Path="zeiss.client/zeiss.client.esproj">
-    <Build />
-    <Deploy />
-  </Project>
-  <Project Path="Zeiss.Server/Zeiss.Server.csproj" />
-</Solution>

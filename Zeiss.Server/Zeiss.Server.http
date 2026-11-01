@@ -1,6 +1,0 @@
-@Zeiss.Server_HostAddress = http://localhost:5233
-
-GET {{Zeiss.Server_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
