@@ -61,3 +61,33 @@ DELETE {{baseUrl}}/api/products/100012
 
 ### Delete it again (expect 404)
 DELETE {{baseUrl}}/api/products/100012
+
+### 11. Search by partial name (expect 200)
+GET {{baseUrl}}/api/products/search?name=lens
+
+### Search is case-insensitive (expect the same 3)
+GET {{baseUrl}}/api/products/search?name=LENS
+
+### 13. Search without a name (expect 400)
+GET {{baseUrl}}/api/products/search
+
+### 14. Stock between 0 and 10 (expect 200, low-stock products)
+GET {{baseUrl}}/api/products/stock-level?min=0&max=10
+
+### 15. min greater than max (expect 400)
+GET {{baseUrl}}/api/products/stock-level?min=50&max=10
+
+### 16. Add 5 units to the CM-100 microscope (expect 200, stock 12 → 17)
+POST {{baseUrl}}/api/products/100000/add-to-stock/5
+
+### 17. Remove 2 units (expect 200, stock 17 → 15)
+POST {{baseUrl}}/api/products/100000/decrement-stock/2
+
+### 18. Remove more than available (expect 500 for now, 409 after Lesson 10)
+POST {{baseUrl}}/api/products/100000/decrement-stock/1000
+
+### 19. Quantity 0 (expect 400)
+POST {{baseUrl}}/api/products/100000/add-to-stock/0
+
+### 20. Product that doesn't exist (expect 404)
+POST {{baseUrl}}/api/products/999999/add-to-stock/5

@@ -104,6 +104,78 @@ public sealed class ProductService : IProductService
         return deletedRows > 0;
     }
 
+    public async Task<IReadOnlyList<ProductDto>> SearchByNameAsync(string name, CancellationToken cancellationToken)
+    {
+        var term = name.Trim();
+
+        return await _dbContext.Products
+            .AsNoTracking()
+            .Where(p => p.Name.Contains(term))
+            .OrderBy(p => p.Name)
+            .SelectDto()
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ProductDto>> GetByStockLevelAsync(int min, int max, CancellationToken cancellationToken)
+    {
+        return await _dbContext.Products
+            .AsNoTracking()
+            .Where(p => p.StockQuantity >= min && p.StockQuantity <= max)
+            .OrderBy(p => p.StockQuantity)
+            .ThenBy(p => p.Name)
+            .SelectDto()
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<ProductDto?> AddStockAsync(int id, int quantity, CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+
+        var updatedRows = await _dbContext.Products
+            .Where(p => p.Id == id)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(p => p.StockQuantity, p => p.StockQuantity + quantity)
+                .SetProperty(p => p.UpdatedAt, now),
+                cancellationToken);
+
+        if (updatedRows == 0)
+        {
+            return null;
+        }
+
+        _logger.LogInformation("Added {Quantity} unit(s) to product {ProductId}", quantity, id);
+
+        return await GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task<ProductDto?> DecrementStockAsync(int id, int quantity, CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+
+        var updatedRows = await _dbContext.Products
+            .Where(p => p.Id == id && p.StockQuantity >= quantity)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(p => p.StockQuantity, p => p.StockQuantity - quantity)
+                .SetProperty(p => p.UpdatedAt, now),
+                cancellationToken);
+
+        if (updatedRows == 0)
+        {
+            var exists = await _dbContext.Products.AnyAsync(p => p.Id == id, cancellationToken);
+            if (!exists)
+            {
+                return null;
+            }
+
+            _logger.LogWarning("Insufficient stock to remove {Quantity} unit(s) from product {ProductId}", quantity, id);
+            throw new InsufficientStockException(id, quantity);
+        }
+
+        _logger.LogInformation("Removed {Quantity} unit(s) from product {ProductId}", quantity, id);
+
+        return await GetByIdAsync(id, cancellationToken);
+    }
+
     private async Task EnsureCategoryExistsAsync(int categoryId, CancellationToken cancellationToken)
     {
         var exists = await _dbContext.Categories
