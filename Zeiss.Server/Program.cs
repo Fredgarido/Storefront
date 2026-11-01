@@ -16,6 +16,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         .UseAsyncSeeding((context, _, cancellationToken) => DatabaseSeeder.SeedAsync(context, cancellationToken)));
 
 var app = builder.Build();
+
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();

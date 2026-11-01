@@ -24,7 +24,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasMaxLength(100);
 
         builder.Property(p => p.Description)
-            .HasMaxLength(500);
+            .HasMaxLength(1000);
 
         builder.Property(p => p.Price)
             .HasPrecision(18, 2);
