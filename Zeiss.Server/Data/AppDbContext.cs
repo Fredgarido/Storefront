@@ -20,7 +20,9 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Visit ID later
+        // Revisit ID later
+        // 100000–999999 keeps every ID a true 6-digit integer (no zero-padding needed).
+        // The sequence lives in the database, so IDs stay unique across multiple API instances.
         modelBuilder.HasSequence<int>(ProductIdSequence)
             .StartsAt(100000)
             .IncrementsBy(1)
